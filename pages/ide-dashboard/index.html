@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IDE 管理</title>
+    <link rel="stylesheet" href="./style.css?v=1.10.0" />
+    <script src="/api/plugin/page/bridge-sdk.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <div class="brand">
+          <div>
+            <h1 id="brandTitle">IDE 管理</h1>
+            <p class="subtitle">沙盒文件、终端、任务与待办</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <label for="sandboxSelect">当前沙盒</label>
+          <select id="sandboxSelect">
+            <option value="">请选择沙盒...</option>
+          </select>
+          <button id="refreshBtn" type="button" title="刷新" aria-label="刷新沙盒">↻</button>
+          <span id="liveStatus" class="live-status">实时更新</span>
+          <span id="userBadge" class="user-badge">-</span>
+        </div>
+      </header>
+      <section class="status-strip" aria-label="当前状态">
+        <div>
+          <span class="status-label">沙盒</span>
+          <strong id="sandboxStatus">未选择</strong>
+        </div>
+        <div>
+          <span class="status-label">执行</span>
+          <strong id="executionStatus">读取中</strong>
+        </div>
+        <div>
+          <span class="status-label">限制</span>
+          <strong id="limitStatus">读取中</strong>
+        </div>
+      </section>
+
+      <main class="app-body">
+        <aside class="sidebar">
+          <div class="panel-header">
+            <h2>文件</h2>
+            <button id="newFileBtn" type="button" title="新建文件">+ 文件</button>
+            <button id="newFolderBtn" type="button" title="新建文件夹">+ 目录</button>
+          </div>
+          <div id="fileTree" class="file-tree">请先选择沙盒</div>
+        </aside>
+
+        <section class="workspace">
+          <nav class="tabs">
+            <button class="tab active" data-tab="overview">总览</button>
+            <button class="tab" data-tab="editor">编辑器</button>
+            <button class="tab" data-tab="terminal">终端</button>
+            <button class="tab" data-tab="tasks">任务</button>
+            <button class="tab" data-tab="todos">待办</button>
+            <button class="tab" data-tab="history">活动</button>
+          </nav>
+
+          <div class="tab-panels">
+            <div id="overviewPanel" class="tab-panel active">
+              <div class="panel-toolbar">
+                <h2>总览</h2>
+                <span id="overviewUpdated" class="panel-note">等待同步</span>
+              </div>
+              <div id="overviewSummary" class="overview-summary"></div>
+              <div class="overview-layout">
+                <section class="overview-section">
+                  <div class="overview-heading">
+                    <h3>全部沙盒</h3>
+                    <span>文件与最近动作</span>
+                  </div>
+                  <div id="overviewSandboxList" class="overview-list"></div>
+                </section>
+                <section class="overview-section">
+                  <div class="overview-heading">
+                    <h3>工具执行</h3>
+                    <span>按最近时间排序</span>
+                  </div>
+                  <div id="overviewToolList" class="overview-list tool-list"></div>
+                </section>
+              </div>
+            </div>
+
+            <div id="editorPanel" class="tab-panel">
+              <div class="editor-toolbar">
+                <span id="editorPath" class="editor-path">未选择文件</span>
+                <div class="editor-actions">
+                  <button id="saveFileBtn" type="button" class="primary" disabled>保存</button>
+                  <button id="deleteFileBtn" type="button" class="danger" disabled>删除</button>
+                  <button id="renameFileBtn" type="button" disabled>重命名</button>
+                </div>
+              </div>
+              <textarea id="editor" class="editor" spellcheck="false" disabled placeholder="选择左侧文件后在这里编辑。"></textarea>
+              <div id="editorStatus" class="editor-status"></div>
+            </div>
+
+            <div id="terminalPanel" class="tab-panel">
+              <div class="terminal-toolbar">
+                <input id="commandInput" type="text" placeholder="输入命令，例如: python --version" disabled />
+                <button id="runCommandBtn" type="button" class="primary" disabled>执行</button>
+                <label class="check">
+                  <input id="bgTaskCheck" type="checkbox" />
+                  后台运行
+                </label>
+              </div>
+              <pre id="terminalOutput" class="terminal-output"></pre>
+            </div>
+
+            <div id="tasksPanel" class="tab-panel">
+              <div class="panel-toolbar">
+                <h2>后台任务</h2>
+                <button id="refreshTasksBtn" type="button">刷新</button>
+              </div>
+              <div id="tasksList" class="tasks-list"></div>
+            </div>
+
+            <div id="todosPanel" class="tab-panel">
+              <div class="panel-toolbar">
+                <h2>待办事项</h2>
+                <button id="addTodoBtn" type="button">+ 添加</button>
+                <button id="saveTodosBtn" type="button" class="primary">保存</button>
+              </div>
+              <div id="todosList" class="todos-list"></div>
+            </div>
+
+            <div id="historyPanel" class="tab-panel">
+              <div class="panel-toolbar">
+                <h2>工具活动</h2>
+                <button id="refreshHistoryBtn" type="button">刷新</button>
+              </div>
+              <div id="historyList" class="history-list"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modal" class="modal hidden">
+      <div class="modal-content">
+        <h3 id="modalTitle">提示</h3>
+        <input id="modalInput" type="text" placeholder="请输入..." />
+        <div class="modal-actions">
+          <button id="modalCancel" type="button">取消</button>
+          <button id="modalConfirm" type="button" class="primary">确认</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js?v=1.8.6" defer></script>
+  </body>
+</html>

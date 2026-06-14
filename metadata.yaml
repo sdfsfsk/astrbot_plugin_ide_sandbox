@@ -1,0 +1,5 @@
+name: astrbot_plugin_ide_sandbox
+display_name: IDE 管理
+desc: IDE 管理插件 - 为 LLM 提供文件操作、命令执行、打包下载能力，支持群聊与私聊独立沙盒
+version: 1.5.1
+author: matsuko
